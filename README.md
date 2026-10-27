@@ -4,4 +4,4 @@
 
 https://pycv.github.io/tools/
 
-新增工具：在 `tools/<name>/` 放一个 `index.html`，再到首页加一张卡片即可。
+新增工具：在根目录建 `<name>/index.html`，再到首页加一张卡片即可。
