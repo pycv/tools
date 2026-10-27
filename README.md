@@ -1,15 +1,24 @@
-# tools
+# Tools
 
 一些纯前端的小工具，打开即用，数据不上传。
 
-线上地址：https://pycv.github.io/tools/
+**在线地址**：https://pycv.github.io/tools/
+**博客**：https://pycv.github.io/blog/
 
-## 工具列表
+[![Deploy](https://img.shields.io/badge/GitHub%20Pages-live-2ea44f?logo=github)](https://pycv.github.io/tools/)
 
-| 工具 | 路径 | 说明 |
-|------|------|------|
-| JSON 格式化 | `/tools/json-formatter/` | 格式化、压缩、校验 JSON |
-| 时间戳转换 | `/tools/timestamp/` | Unix 时间戳与本地/UTC/ISO 互转 |
+## 工具
+
+| 工具 | 在线使用 | 说明 |
+|------|----------|------|
+| JSON 格式化 | [打开](https://pycv.github.io/tools/tools/json-formatter/) | 格式化、压缩、校验 JSON，报错带行列位置 |
+| 时间戳转换 | [打开](https://pycv.github.io/tools/tools/timestamp/) | Unix 时间戳与本地时间、UTC、ISO 互转 |
+
+## 特点
+
+- 纯静态，无构建步骤、无后端依赖
+- 所有处理都在浏览器本地完成，内容不会上传
+- 支持深色模式，跟随系统
 
 ## 目录结构
 
@@ -25,11 +34,21 @@
 
 1. 新建 `tools/<name>/index.html`
 2. 引入 `../../assets/style.css`，复用已有样式变量
-3. 在 `index.html` 的工具网格里加一张卡片
-4. commit & push，GitHub Pages 自动生效（分支部署，无需 CI）
+3. 在根目录 `index.html` 的工具网格里加一张卡片
+4. 更新本 README 的工具表
+5. commit & push，GitHub Pages 自动发布（约 1 分钟）
 
-## 约定
+## 本地预览
 
-- 纯静态，不引入构建步骤和后端依赖
-- 所有数据处理留在浏览器本地
-- 相对路径引用资源，方便本地直接打开预览
+```bash
+python3 -m http.server 8000
+# 打开 http://localhost:8000/
+```
+
+## 技术
+
+原生 HTML / CSS / JavaScript，零运行时依赖。
+
+## License
+
+MIT
