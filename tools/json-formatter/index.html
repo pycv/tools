@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JSON 格式化 · Tools</title>
+<meta name="description" content="在线格式化、压缩、校验 JSON，所有处理都在浏览器本地完成。">
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="tool-head">
+    <a href="../../">← Tools</a>
+    <h1>JSON 格式化</h1>
+    <p>格式化、压缩、校验。所有处理都在本地浏览器完成，内容不会上传。</p>
+  </div>
+
+  <div class="panel">
+    <textarea id="input" rows="14" spellcheck="false" placeholder='粘贴 JSON，例如 {"name":"pycv","tags":["tools"]}'></textarea>
+    <div class="row">
+      <button class="primary" id="format">格式化</button>
+      <button id="minify">压缩</button>
+      <button id="copy">复制结果</button>
+      <button id="clear">清空</button>
+      <span class="meta" id="stats"></span>
+    </div>
+    <div class="error" id="error"></div>
+    <div class="result"><textarea id="output" rows="14" spellcheck="false" readonly placeholder="结果会出现在这里"></textarea></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var input = document.getElementById('input');
+  var output = document.getElementById('output');
+  var error = document.getElementById('error');
+  var stats = document.getElementById('stats');
+
+  function parse() {
+    var raw = input.value.trim();
+    if (!raw) { throw new Error('输入为空'); }
+    try {
+      return { value: JSON.parse(raw), raw: raw };
+    } catch (e) {
+      var m = /position\s+(\d+)/i.exec(e.message);
+      var msg = e.message;
+      if (m) {
+        var pos = Number(m[1]);
+        var before = input.value.slice(0, pos);
+        var line = before.split('\n').length;
+        var col = pos - before.lastIndexOf('\n');
+        msg += '（第 ' + line + ' 行，第 ' + col + ' 列）';
+      }
+      throw new Error(msg);
+    }
+  }
+
+  function render(text) {
+    output.value = text;
+    var bytes = new Blob([text]).size;
+    stats.textContent = text.length + ' 字符 · ' + bytes + ' 字节 · ' + text.split('\n').length + ' 行';
+  }
+
+  function run(mode) {
+    error.textContent = '';
+    try {
+      var parsed = parse();
+      render(JSON.stringify(parsed.value, null, mode === 'format' ? 2 : 0));
+    } catch (e) {
+      output.value = '';
+      stats.textContent = '';
+      error.textContent = '✗ ' + e.message;
+    }
+  }
+
+  document.getElementById('format').addEventListener('click', function () { run('format'); });
+  document.getElementById('minify').addEventListener('click', function () { run('minify'); });
+  document.getElementById('clear').addEventListener('click', function () {
+    input.value = ''; output.value = ''; error.textContent = ''; stats.textContent = ''; input.focus();
+  });
+  document.getElementById('copy').addEventListener('click', async function () {
+    if (!output.value) { return; }
+    try {
+      await navigator.clipboard.writeText(output.value);
+      var btn = this; var old = btn.textContent;
+      btn.textContent = '已复制';
+      setTimeout(function () { btn.textContent = old; }, 1200);
+    } catch (e) {
+      output.select(); document.execCommand('copy');
+    }
+  });
+  input.addEventListener('keydown', function (e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { run('format'); }
+  });
+})();
+</script>
+</body>
+</html>

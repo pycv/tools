@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>时间戳转换 · Tools</title>
+<meta name="description" content="Unix 时间戳与本地时间、UTC、ISO 8601 互转，纯本地计算。">
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="tool-head">
+    <a href="../../">← Tools</a>
+    <h1>时间戳转换</h1>
+    <p>Unix 时间戳与本地时间、UTC、ISO 互转。自动识别秒和毫秒。</p>
+  </div>
+
+  <div class="panel">
+    <div class="field">
+      <label for="ts">时间戳（秒 / 毫秒）</label>
+      <input type="text" id="ts" inputmode="numeric" placeholder="例如 1761540600 或 1761540600000" autocomplete="off">
+    </div>
+    <div class="row">
+      <button class="primary" id="toDate">转为时间</button>
+      <button id="now">当前时间</button>
+    </div>
+    <div class="error" id="err1"></div>
+
+    <div class="result grid-2" id="out1" style="display:none">
+      <div><label>本地时间</label><input type="text" id="r-local" readonly></div>
+      <div><label>UTC</label><input type="text" id="r-utc" readonly></div>
+      <div><label>ISO 8601</label><input type="text" id="r-iso" readonly></div>
+      <div><label>相对现在</label><input type="text" id="r-rel" readonly></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="field">
+      <label for="dt">日期时间（本地时区）</label>
+      <input type="text" id="dt" placeholder="例如 2026-10-27 11:30:00" autocomplete="off">
+    </div>
+    <div class="row">
+      <button class="primary" id="toTs">转为时间戳</button>
+      <button id="fillNow">填入当前时间</button>
+    </div>
+    <div class="error" id="err2"></div>
+
+    <div class="result grid-2" id="out2" style="display:none">
+      <div><label>秒</label><input type="text" id="r-sec" readonly></div>
+      <div><label>毫秒</label><input type="text" id="r-ms" readonly></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function localString(d) {
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' +
+           pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+
+  function utcString(d) {
+    return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()) + ' ' +
+           pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) + ' UTC';
+  }
+
+  function relative(d) {
+    var diff = Math.round((d.getTime() - Date.now()) / 1000);
+    var abs = Math.abs(diff);
+    var unit = '秒', val = abs;
+    if (abs >= 86400) { val = Math.round(abs / 86400); unit = '天'; }
+    else if (abs >= 3600) { val = Math.round(abs / 3600); unit = '小时'; }
+    else if (abs >= 60) { val = Math.round(abs / 60); unit = '分钟'; }
+    return diff === 0 ? '就是现在' : (diff > 0 ? val + ' ' + unit + '后' : val + ' ' + unit + '前');
+  }
+
+  $('toDate').addEventListener('click', function () {
+    $('err1').textContent = '';
+    var raw = $('ts').value.trim();
+    if (!/^-?\d+$/.test(raw)) {
+      $('err1').textContent = '✗ 请输入纯数字时间戳';
+      $('out1').style.display = 'none';
+      return;
+    }
+    var n = Number(raw);
+    var ms = raw.replace('-', '').length <= 10 ? n * 1000 : n;
+    var d = new Date(ms);
+    if (isNaN(d.getTime())) {
+      $('err1').textContent = '✗ 时间戳超出可表示范围';
+      $('out1').style.display = 'none';
+      return;
+    }
+    $('r-local').value = localString(d);
+    $('r-utc').value = utcString(d);
+    $('r-iso').value = d.toISOString();
+    $('r-rel').value = relative(d);
+    $('out1').style.display = '';
+  });
+
+  $('now').addEventListener('click', function () {
+    $('ts').value = String(Math.floor(Date.now() / 1000));
+    $('toDate').click();
+  });
+
+  $('toTs').addEventListener('click', function () {
+    $('err2').textContent = '';
+    var raw = $('dt').value.trim();
+    if (!raw) { $('err2').textContent = '✗ 请输入日期时间'; return; }
+    var normalized = raw.replace(' ', 'T');
+    var d = new Date(normalized);
+    if (isNaN(d.getTime())) {
+      $('err2').textContent = '✗ 无法解析，试试 2026-10-27 11:30:00';
+      $('out2').style.display = 'none';
+      return;
+    }
+    $('r-sec').value = String(Math.floor(d.getTime() / 1000));
+    $('r-ms').value = String(d.getTime());
+    $('out2').style.display = '';
+  });
+
+  $('fillNow').addEventListener('click', function () {
+    $('dt').value = localString(new Date());
+  });
+
+  $('fillNow').click();
+})();
+</script>
+</body>
+</html>
